@@ -3,6 +3,46 @@
  */
 import java.io.*;
 
+interface StackInterface {
+	public boolean isEmpty( );
+ 	public void push(Object newItem); 
+	public Object pop( ); 
+	public void popAll ( );
+	public Object peek( );
+}
+
+class StackListBased implements StackInterface {
+	private ListInterface list; 
+
+	public StackListBased( ) {
+		list = new ListReferenceBased( );
+	}
+
+	public boolean isEmpty( ) {
+		return list.isEmpty( );
+	}
+ 	public void push(Object newItem) {
+		list.add(1, newItem); 		
+ 	}
+	public Object pop( ) {
+		if (!list.isEmpty( )) {
+			Object temp = list.get(1);
+			list.remove(1);
+			return temp;
+		} else {
+			throw new RuntimeException("pop");
+		}
+	}
+	public void popAll ( ) {
+		list.removeAll( );
+	}
+	public Object peek( ) {
+		if (!isEmpty( )) return list.get(1);
+		else {
+			throw new RuntimeException("peek");
+		}		
+	}
+}
 
 class Node {
 	private Object genre; 
@@ -134,6 +174,8 @@ public class MovieDatabase
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		ListReferenceBased list = new ListReferenceBased();
+		StackListBased stack = new StackListBased();
+		
 		while (true)
 		{
 			try
