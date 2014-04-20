@@ -1,0 +1,3 @@
+all:
+	javac MovieDatabase.java
+
