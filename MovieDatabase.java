@@ -3,60 +3,30 @@
  */
 import java.io.*;
 
-interface StackInterface {
-	public boolean isEmpty( );
- 	public void push(Object newItem); 
-	public Object pop( ); 
-	public void popAll ( );
-	public Object peek( );
-}
-
-class StackListBased implements StackInterface {
-	private ListInterface list; 
-
-	public StackListBased( ) {
-		list = new ListReferenceBased( );
-	}
-
-	public boolean isEmpty( ) {
-		return list.isEmpty( );
-	}
- 	public void push(Object newItem) {
-		list.add(1, newItem); 		
- 	}
-	public Object pop( ) {
-		if (!list.isEmpty( )) {
-			Object temp = list.get(1);
-			list.remove(1);
-			return temp;
-		} else {
-			throw new RuntimeException("pop");
-		}
-	}
-	public void popAll ( ) {
-		list.removeAll( );
-	}
-	public Object peek( ) {
-		if (!isEmpty( )) return list.get(1);
-		else {
-			throw new RuntimeException("peek");
-		}		
-	}
-}
-
 class Node {
 	private Object genre; 
+	private Object title;
 	private Node next;
-	public Node(Object newGenre) {
-		genre = newGenre;
+	private Node below;
+	public Node() {
+		genre = null;
 		next = null;
 	}
-	public Node(Object newGenre, Node nextNode) {
+	public Node(Object newGenre, Object newTitle) {
 		genre = newGenre;
+		title = newTitle;
+		next = null;
+	}
+	public Node(Object newGenre, Object newTitle, Node nextNode) {
+		genre = newGenre;
+		title = newTitle;
 		next = nextNode;
 	}
-	public Object getItem( ) {
+	public Object getGenre( ) {
 		return genre;
+	}
+	public Object getTitle( ) {
+		return title;
 	}
 	public Node getNext( ) {
 		return next;
@@ -78,6 +48,7 @@ interface ListInterface {
 interface ListInterfaceDebug {
 	public void printAll( );
 	public void search(String item);
+	//public void orderedInsert(String item);
 }
 
 class ListReferenceBased implements ListInterface, ListInterfaceDebug {
@@ -86,23 +57,46 @@ class ListReferenceBased implements ListInterface, ListInterfaceDebug {
 	// constructor
 	public ListReferenceBased( ) {
 		numItems = 0;
-		head =  null;
+		head = null;
 	}
 	
 	public void search(String item) {
 		for ( Node curr = head; curr != null; curr = curr.getNext())
 		{
-			if ( curr.getItem().toString().contains(item))
-				System.out.println(curr.getItem().toString());
+			if ( curr.getGenre().toString().contains(item))
+				System.out.println(curr.getGenre().toString());
 		}
 	}
 	public void printAll( ) {
 		for ( Node curr = head; curr != null; curr = curr.getNext())
 		{
-			System.out.println(curr.getItem().toString());
+			System.out.println(curr.getGenre().toString());
 		}
 	}
-	
+
+	public void orderedInsert(String genre) {
+		if (numItems == 0) {
+			// 1이 들어온 후 또 1이 들어오면 이전 1이 밀린다.
+			Node newNode = new Node(genre, head);
+			head = newNode;
+		} else {
+			Node curr = head;
+			Node next = curr.getNext();
+			while ( next != null )
+			{
+				if ( next.getGenre().toString().compareTo(genre) > 0 )
+					break;
+				if ( next.getGenre().toString().compareTo(genre) == 0 )
+					return;
+				curr = curr.getNext();
+				next = next.getNext();
+			}
+			Node prev = curr;
+			Node newNode = new Node(genre, prev.getNext( ));
+			prev.setNext(newNode);
+		}
+		numItems++;
+	}
 	// operations
 	private Node find(int index) {
 	// return reference to ith node
@@ -138,6 +132,27 @@ class ListReferenceBased implements ListInterface, ListInterfaceDebug {
 		} 
 	}
 	
+	public void remove(String string) {
+		if ( 1 <= numItems) {		
+			if (numItems == 1) {
+				head = head.getNext( );
+			} else {
+				Node curr = head;
+				Node next = curr.getNext();
+				while ( next != null )
+				{
+					if ( next.getGenre().toString().compareTo(string) == 0 )
+						break;
+					curr = curr.getNext();
+					next = next.getNext();
+				}
+				Node prev = curr;
+				Node temp = prev.getNext( );
+				prev.setNext(temp.getNext( ));
+			}
+			numItems--;
+		}
+	}
 	public void remove(int index) {
 		if (index >= 1 && index <= numItems) {
 			if (index == 1) head = head.getNext( );
@@ -155,7 +170,7 @@ class ListReferenceBased implements ListInterface, ListInterfaceDebug {
 	public Object get(int index) {
 		if (index >= 1 && index <= numItems) {
 			Node curr = find(index);
-			return curr.getItem( );
+			return curr.getGenre( );
 		} else {			
 			throw new RuntimeException("get");		
 		}
@@ -163,7 +178,7 @@ class ListReferenceBased implements ListInterface, ListInterfaceDebug {
 	
 	public void removeAll( ) {
 		numItems = 0;
-		head =  null;		
+		head = null;
 	}
 }
 
@@ -174,7 +189,6 @@ public class MovieDatabase
 	{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		ListReferenceBased list = new ListReferenceBased();
-		StackListBased stack = new StackListBased();
 		
 		while (true)
 		{
@@ -200,20 +214,17 @@ public class MovieDatabase
 		int inputLength = inputArray.length;		
 		String operation = inputArray[0].toUpperCase();
 
-		if ( operation.contains("INSERT") && inputLength == 4 ) // insert %1% %v%
+		if ( operation.contains("INSERT") && inputLength == 2 ) // insert %genre%
 		{
-			 int index = Integer.parseInt(inputArray[1]);
-			 String genre = inputArray[3];
-			 list.add(index, genre);
+			 //int index = Integer.parseInt(inputArray[1]);
+			 String genre = inputArray[1];
+			 list.orderedInsert(genre);
+			 //list.add(index, genre);
 		} else if ( operation.contains("DELETE") && inputLength == 2) { // DELETE %1%
-			 int index = Integer.parseInt(inputArray[1]);
-			 list.remove(index);
+			 String genre = inputArray[1];
+			 list.remove(genre);
 		} else if ( operation.contains("PRINT") && inputLength == 1) { // PRINT
 			list.printAll();
-		} else if ( operation.contains("PRINT") && inputLength == 2) { // print %1%
-			int index = Integer.parseInt(inputArray[1]);
-			Object genre = list.get(index);
-			System.out.println(genre.toString());
 		} else if (operation.contains("SEARCH") && inputLength == 2) {
 			 String genre = inputArray[1];
 			 list.search(genre);			
