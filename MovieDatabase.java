@@ -1,5 +1,6 @@
 /*
  * 숙제 채점 후 충격 먹어서 처음부터 다시 만듬.
+ * SEARCH 명령시 못찾으면 EMPTY를 빼먹었음.
  * 2014. 04. 20.(일)
  * 명경백
  */
@@ -84,8 +85,11 @@ class ListReferenceBased implements ListInterface, ListInterfaceDebug {
 	}
 	
 	public void search(String item) {
-		if ( this.numItems < 1 )
+		if ( this.numItems < 1 ) {
+			System.out.println("EMPTY");
 			return;		
+		}
+		boolean searchFounded = false;
 		for ( Node curr = head.getNext(); curr != tail; curr = curr.getNext())
 		{
 			String record = curr.getRecord().toString();
@@ -101,9 +105,12 @@ class ListReferenceBased implements ListInterface, ListInterfaceDebug {
 				title = array[1];
 				if ( title.contains(item)) {			
 					System.out.println("(" + genre + ", " + title +")");
+					searchFounded = true;
 				}				
 			}
-		}		
+		}
+		if ( searchFounded == false )
+			System.out.println("EMPTY");
 	}
 	public void printAll( ) {
 		if (this.numItems < 1 ) {
